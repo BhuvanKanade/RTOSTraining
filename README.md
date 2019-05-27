@@ -1,3 +1,3 @@
 # RTOSTraining
 RTOS training 
-Started on 27th May 2019
+Started on 27th May 2019 10AM
