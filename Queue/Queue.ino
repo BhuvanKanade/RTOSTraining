@@ -98,14 +98,14 @@ void setup()
     Serial.println(F("In Setup function, Creating Queue"));
     // Create a queue capable of containing 10 pointers to AMessage structures.
     // These should be passed by pointer as they contain a lot of data.
-    xQueue = xQueueCreate( 5, sizeof  (struct AMessage) );
+    xQueue = xQueueCreate( 20, sizeof  (struct AMessage) );
     if( xQueue == 0 )
     {
             Serial.println(F("Failed to create the queue."));
     }    
     
     Serial.println(F("Creating  task"));
-    xTaskCreate(LCDDisplay_Task, "LCDDisplay_Task", 100, NULL, 1, &LCDDisplay_TaskHandle);
+    xTaskCreate(LCDDisplay_Task, "LCDDisplay_Task", 100, NULL, 6, &LCDDisplay_TaskHandle);
     xTaskCreate(TempSenor_Task, "TempSenor_Task", 100, NULL, 4, &TempSenor_TaskHandle);
     xTaskCreate(HumiditySensor_Task, "HumiditySensor_Task", 100, NULL, 4, &HumiditySensor_TaskHandle);
     
@@ -159,7 +159,7 @@ void LCDDisplay_Task(void* pvParameters)
                   Serial.println(F("LCDDisplay_Task queue timeout"));
               }
           }
-          vTaskDelay(5000);
+          vTaskDelay(1000);
       }
 
 //    lcd.setCursor(sizeof("humid : "), 1);
