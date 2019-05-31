@@ -31,8 +31,9 @@ and that both those copyright notices and this permission notice appear in suppo
 TaskHandle_t LPT_TaskHandle;
 TaskHandle_t MPT_TaskHandle;
 TaskHandle_t HPT_TaskHandle;
+TaskHandle_t HHPT_TaskHandle;
 
-SemaphoreHandle_t binSemaphore_A = NULL;
+SemaphoreHandle_t binMutexSemaphore_A = NULL;
 
 #define printMsg(taskhandle,str)  {\
         Serial.print(F("Priority "));\  
@@ -46,9 +47,9 @@ void setup()
     Serial.begin(9600);
     Serial.println(F("In Setup function, Creating Binary Semaphore"));
 
-    vSemaphoreCreateBinary(binSemaphore_A);  /* Create binary semaphore */
+    binMutexSemaphore_A = xSemaphoreCreateMutex();  /* Create binary semaphore */
 
-    if(binSemaphore_A != NULL)
+    if(binMutexSemaphore_A != NULL)
     {
         Serial.println(F("Creating low priority task"));
         xTaskCreate(LPT_Task, "LPT_Task", 100, NULL, 1, &LPT_TaskHandle);
@@ -71,7 +72,7 @@ void loop()
 void LPT_Task(void* pvParameters)
 {
     printMsg(LPT_TaskHandle,"LPT_Task Acquiring semaphore"); 
-    xSemaphoreTake(binSemaphore_A,portMAX_DELAY);
+    xSemaphoreTake(binMutexSemaphore_A,portMAX_DELAY);
 
     printMsg(LPT_TaskHandle,"LPT_Task Creating HPT"); 
     xTaskCreate(HPT_Task, "HPT_Task", 100, NULL, 3, &HPT_TaskHandle); 
@@ -80,8 +81,11 @@ void LPT_Task(void* pvParameters)
     printMsg(LPT_TaskHandle,"LPT_Task Creating MPT");  
     xTaskCreate(MPT_Task, "MPT_Task", 100, NULL, 2, &MPT_TaskHandle); 
 
+    printMsg(LPT_TaskHandle,"LPT_Task Creating HHPT"); 
+    xTaskCreate(HHPT_Task, "HHPT_Task", 100, NULL, 4, &HHPT_TaskHandle); 
+
     printMsg(LPT_TaskHandle,"LPT_Task Releasing Semaphore");
-    xSemaphoreGive(binSemaphore_A);
+    xSemaphoreGive(binMutexSemaphore_A);
 
     printMsg(LPT_TaskHandle,"LPT_Task Finally Exiting");
     vTaskDelete(LPT_TaskHandle);
@@ -100,13 +104,31 @@ void MPT_Task(void* pvParameters)
 void HPT_Task(void* pvParameters)
 {
     printMsg(HPT_TaskHandle,"HPT_Task Trying to Acquire the semaphore");
-    xSemaphoreTake(binSemaphore_A,portMAX_DELAY);
+    xSemaphoreTake(binMutexSemaphore_A,portMAX_DELAY);
 
     printMsg(HPT_TaskHandle,"HPT_Task Acquired the semaphore");    
 
     printMsg(HPT_TaskHandle,"HPT_Task Releasing the semaphore");
-    xSemaphoreGive(binSemaphore_A);    
+    xSemaphoreGive(binMutexSemaphore_A);    
 
     printMsg(HPT_TaskHandle,"HPT_Task About to Exit");
     vTaskDelete(HPT_TaskHandle);
+}
+
+
+
+
+/*MPT: High priority task*/
+void HHPT_Task(void* pvParameters)
+{
+    printMsg(HHPT_TaskHandle,"HHPT_Task Trying to Acquire the semaphore");
+    xSemaphoreTake(binMutexSemaphore_A,portMAX_DELAY);
+
+    printMsg(HHPT_TaskHandle,"HHPT_Task Acquired the semaphore");    
+
+    printMsg(HHPT_TaskHandle,"HHPT_Task Releasing the semaphore");
+    xSemaphoreGive(binMutexSemaphore_A);    
+
+    printMsg(HHPT_TaskHandle,"HHPT_Task About to Exit");
+    vTaskDelete(HHPT_TaskHandle);
 }
