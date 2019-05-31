@@ -1,3 +1,5 @@
+//Trying to resume the task and coming back to ISR
+
 /***************************************************************************************************
                             ExploreEmbedded Copyright Notice    
 ****************************************************************************************************
@@ -43,6 +45,9 @@ void setup()
   xTaskCreate(MyTask2, "Task2", 100, NULL, 2, &TaskHandle_2);  
   xTaskCreate(MyTask3, "Task3", 100, NULL, 3, &TaskHandle_3);
   xTaskCreate(MyTask4, "Task4", 100, NULL, 4, &TaskHandle_4);  
+  Serial.println(F("Schedular entreed"));
+  vTaskStartScheduler();
+    Serial.println(F("Exit Schedular"));
 }
 
 
@@ -66,21 +71,22 @@ static void ExternalInterrupt()
 {
     static int count=0;
     BaseType_t taskYieldRequired = 0;
-
-    if(count<=3)
+ count = 1;
+    //if(count<=3)
     {
-        count++;
+      //  count++;
     }
 
     switch(count) // Resume one task at a time depending on count value
     {    
     case 1:
         Serial.println(F("ISR Resuming Task2"));
-        taskYieldRequired = xTaskResumeFromISR(TaskHandle_2);
+        vTaskResume(TaskHandle_2); //taskYieldRequired = xTaskResumeFromISR(TaskHandle_2); Trying to resume the task and coming back to ISR
         Serial.println(F("Leaving ISR"));
+        count = 0;
         break;
 
-    case 2:
+    /*case 2:
         Serial.println(F("ISR Resuming Task3"));
         taskYieldRequired = xTaskResumeFromISR(TaskHandle_3);
         Serial.println(F("Leaving ISR"));
@@ -91,16 +97,16 @@ static void ExternalInterrupt()
         taskYieldRequired = xTaskResumeFromISR(TaskHandle_4);
         Serial.println(F("Leaving ISR"));
         break;
-
+    */
     default:
         //DO nothing
         break;
     }
 
-    if(taskYieldRequired == 1) // If the taskYield is reuiqred then trigger the same.
+    //if(taskYieldRequired == 1) // If the taskYield is reuiqred then trigger the same.
     {
         Serial.println(F("Entry"));
-        taskYIELD();
+//        taskYIELD();
         Serial.println(F("Exit"));
     }
 }
@@ -111,7 +117,17 @@ static void ExternalInterrupt()
 static void MyTask2(void* pvParameters)
 {        
     Serial.println(F("Task2, Deleting itself"));
-    vTaskDelete(NULL);     //Delete own task by passing NULL(TaskHandle_2 can also be used)
+    //vTaskDelete(NULL);     //Delete own task by passing NULL(TaskHandle_2 can also be used)
+int i =0;
+while(1)
+{
+Serial.print("Inside While\n");
+i++;
+if (i=3)
+break;  
+}
+delay(300);
+Serial.print("TASK 2 complete\n");
 }
 
 
